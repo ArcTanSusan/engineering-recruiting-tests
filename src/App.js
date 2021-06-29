@@ -16,12 +16,19 @@ function App() {
 
   const submitConditionsInfo = (info) => {
     setSubmittedConditionsInfo(info);
-    console.log("conditions:", info);
   }
 
   const submitMedicalInfo = (info) => {
     setSubmittedMedicalInfo(info);
-    console.log("medical:", info);
+  }
+
+  const submitAPIRequest = (info) => {
+    const APIObject = { 
+      demographicInfo: demographicInfo, 
+      conditionsInfo: conditionsInfo,
+      medicalInfo: medicalInfo,
+    }
+    console.log("Fake API request submitted with the following json request data: ", APIObject);
   }
   return (
     <div className="App">
@@ -30,7 +37,7 @@ function App() {
         <ConditionsForm submit={submitConditionsInfo} />
         <MedicalQuestions submit={submitMedicalInfo} />
         <Summary demographicInfo={demographicInfo} conditionsInfo={conditionsInfo} medicalInfo={medicalInfo} />
-        <Terms />
+        <Terms submit={submitAPIRequest} />
       </header>
     </div>
   );
@@ -87,6 +94,7 @@ function DemographicForm(props) {
     submit(info);
   }
 
+  // TODO(susan): The list of marital statuses could be converted into enum, alternatively.
   const maritalStatuses = [{val: "married"}, {val: "divorced"}, {val: "single"}, {val: "life partner"}, {val: "separated"}, {val: "widowed"}, {val: "other"}];
   return (
     <Container>
@@ -125,7 +133,7 @@ function ConditionsForm(props) {
   }
 
   const onClickCheckbox = (index) => {
-    allConditions[index].isChecked = true;
+    allConditions[index].isChecked = !allConditions[index].isChecked;
     setAllConditions(allConditions);
   }
 
@@ -164,6 +172,9 @@ function MedicalQuestions(props) {
   const [drinkFreq, setDrinkFreq] = useState('');
   const [isDrugUser, setIsDrugUser] = useState(false);
   const [drugFreq, setDrugFreq] = useState('');
+  const [meds, setMeds] = useState('');
+  const [allergies, setAllergies] = useState('');
+  const [surgeries, setSurgeries] = useState('');
 
   const handleSmokeFreq = (event) => {
     setSmokeFreq(event.target.value);
@@ -177,55 +188,77 @@ function MedicalQuestions(props) {
     setDrugFreq(event.target.value);
   }
 
+  const handleMedsChange = (event) => {
+    setMeds(event.target.value);
+  }
+
+  const handleAllergiesChange = (event) => {
+    setAllergies(event.target.value);
+  }
+
+  const handleSurgeriesChange = (event) => {
+    setSurgeries(event.target.value);
+  }
+
   const onSubmit = () => {
     const info = {
-      "isSmoker": isSmoker,
-      "smokeFreq": smokeFreq,
-      "isAlcoholUser": isAlcoholUser,
-      "drinkFreq": drinkFreq,
-      "isDrugUser": isDrugUser,
-      "drugFreq": drugFreq,
+      "is smoker?": isSmoker,
+      "smoke frequency": smokeFreq,
+      "is an alcohol user?": isAlcoholUser,
+      "drink frequency": drinkFreq,
+      "is drug user?": isDrugUser,
+      "drug frequency": drugFreq,
+      "Current medications": meds,
+      "Current allergies": allergies,
+      "Past Surgeries and hospital stays": surgeries,
     }
     submit(info);
   }
-
-
   return (
     <Container>
       <h1>Medical Questions</h1>
       <Label>Do you smoke any tobacco products?
-        <Radio name="group" label="Yes" onClick={() => setIsSmoker(true)} />
-        <Radio name="group" label="No" onClick={() => setIsSmoker(false)} />
+        <Radio name="smoke" label="Yes" onClick={() => setIsSmoker(true)} />
+        <Radio name="smoke" label="No" onClick={() => setIsSmoker(false)} />
       </Label>
       <Label>If yes, how much and how often?<Input val={smokeFreq} onChange={handleSmokeFreq} /></Label>
       <Label>Do you drink alcohol?
-        <Radio name="group" label="Yes" onClick={() => setIsAlchoholUser(true)} />
-        <Radio name="group" label="No" onClick={() => setIsAlchoholUser(false)} />
+        <Radio name="alcohol" label="Yes" onClick={() => setIsAlchoholUser(true)} />
+        <Radio name="alcohol" label="No" onClick={() => setIsAlchoholUser(false)} />
       </Label>
       <Label>If yes, how much and how often?<Input val={drinkFreq} onChange={handleDrinkFreq} /></Label>
       <Label>Have you regularly used illicit drugs?
-        <Radio name="group" label="Yes" onClick={() => setIsDrugUser(true)}/>
-        <Radio name="group" label="No" onClick={() => setIsDrugUser(false)}/>
+        <Radio name="drug" label="Yes" onClick={() => setIsDrugUser(true)}/>
+        <Radio name="drug" label="No" onClick={() => setIsDrugUser(false)}/>
       </Label>
       <Label>If yes, how much and how often?<Input val={drugFreq} onChange={handleDrugFreq} /></Label>
-    
-
+      <h3>Current medications</h3>
+      <Label>Please list any medications you are currently taking including non-prescription medications, vitamins and supplements.
+      <Input value={meds} onChange={handleMedsChange} /></Label>
+      <h3>Medication allergies or reactions</h3>
+      <Label>Please list any medication allergies or reactions.
+      <Input value={allergies} onChange={handleAllergiesChange} />
+      </Label>
+      <h3>Surgeries and Hospital Stays</h3>
+      <Label>List any surgeries or hospital stays you have had and their approximate date and year.
+      <Input value={surgeries} onChange={handleSurgeriesChange} />
+      </Label>
+      <Button content="Submit" primary onClick={onSubmit} />
     </Container>
   )
 }
 
 function Summary(props) {
   const {demographicInfo, conditionsInfo, medicalInfo} = props;
-  console.log('conditions: ', conditionsInfo);
+  const conditionsFinal = conditionsInfo && conditionsInfo.conditions && conditionsInfo.conditions.map( condition => condition.condition).join(", ");
   return (
     <Container>
       <h1>Summary of Your Medical Profile</h1>
       <h2>Demographic Info</h2>{Object.entries(demographicInfo).map(obj => {
       return (<h3>{obj[0]}: {obj[1]}</h3>)})}
-      <h2>Conditions Info</h2>{conditionsInfo.conditions.map(condition => {
-      return (<h3>{condition}</h3>)})}
+      <h2>Conditions Info</h2><h3>{conditionsFinal}</h3>
       <h2>Medical Info</h2>{Object.entries(medicalInfo).map(obj => {
-      return (<h3>{obj[0]}: {obj[1]}</h3>)})}
+      return (<h3>{obj[0]}: {obj[1].toString()}</h3>)})}
     </Container>
   )
 }
@@ -237,6 +270,7 @@ function Terms(props) {
   }
   return (
     <Container>
+      <h1>Terms and Conditions</h1>
       <p>Nullam quis risus eget urna mollis ornare vel eu leo. Aenean lacinia bibendum nulla sed consectetur. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Etiam porta sem malesuada magna mollis euismod. Maecenas sed diam eget risus varius blandit sit amet non magna.
 Etiam porta sem malesuada magna mollis euismod. Nullam quis risus eget urna mollis ornare vel eu leo. Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Vestibulum id ligula porta felis euismod semper. Donec ullamcorper nulla non metus auctor fringilla.</p>
     <Button content="Submit" primary onClick={onSubmit} />
