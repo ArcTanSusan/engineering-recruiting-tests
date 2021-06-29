@@ -12,7 +12,6 @@ function App() {
 
   const submitDemographicForm = (info) => {
     setSubmittedDemographicInfo(info);
-    console.log("demo:", info);
   }
 
   const submitConditionsInfo = (info) => {
@@ -77,13 +76,13 @@ function DemographicForm(props) {
 
   const onSubmit = () => {
     const info = {
-      "name": name,
-      "email": email,
-      "address": address,
-      "gender": gender,
-      "dob": dob,
-      "phone": phone,
-      "maritalStatus": maritalStatus,
+      "Name": name,
+      "Email": email,
+      "Home Address": address,
+      "Gender": gender,
+      "Date of Birth": dob,
+      "Phone Number": phone,
+      "Marital Status": maritalStatus,
     }
     submit(info);
   }
@@ -123,7 +122,6 @@ function ConditionsForm(props) {
       filteredConditions = conditions.filter(condition => condition.type.toLowerCase().includes(searchVal.toLowerCase()));
     }
     setAllConditions(filteredConditions);
-    console.log(allConditions);
   }
 
   const onClickCheckbox = (index) => {
@@ -139,7 +137,7 @@ function ConditionsForm(props) {
 
   const onSubmit = () => {
     const info = {
-      "conditions": conditions,
+      "conditions": allConditions.filter(condition => condition.isChecked)
     }
     submit(info);
   }
@@ -218,13 +216,16 @@ function MedicalQuestions(props) {
 
 function Summary(props) {
   const {demographicInfo, conditionsInfo, medicalInfo} = props;
+  console.log('conditions: ', conditionsInfo);
   return (
     <Container>
       <h1>Summary of Your Medical Profile</h1>
       <h2>Demographic Info</h2>{Object.entries(demographicInfo).map(obj => {
-      return (<div>{obj}</div>)})}
-      <h2>Conditions Info</h2><p>{conditionsInfo}</p>
-      <h2>Medical Short Answers</h2><p>{medicalInfo}</p>
+      return (<h3>{obj[0]}: {obj[1]}</h3>)})}
+      <h2>Conditions Info</h2>{conditionsInfo.conditions.map(condition => {
+      return (<h3>{condition}</h3>)})}
+      <h2>Medical Info</h2>{Object.entries(medicalInfo).map(obj => {
+      return (<h3>{obj[0]}: {obj[1]}</h3>)})}
     </Container>
   )
 }
